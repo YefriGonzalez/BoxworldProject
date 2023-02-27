@@ -1,0 +1,320 @@
+package com.yefrig.boxworldserver.parser;
+import java_cup.runtime.*;
+import java.util.ArrayList;
+
+class Parser;
+parser code{:
+    
+    private int posX;
+    private int posY;
+    private String type;
+    private ArrayList<Board> boards;
+    private ArrayList<Box> boxes;
+    private ArrayList<Target> targets;
+    //Banderas para validar la repeticion de datos
+    private boolean boxColor;
+    private boolean boxOnTargetColor;
+    private boolean targetColor;
+    private boolean brickColor;
+    private boolean hallColor;
+    private boolean undefinedColor;
+    private boolean playerColor;
+    private boolean nameTablero;
+    private boolean rowTablero;
+    private boolean colTablero;
+    private boolean player;
+    private boolean config;
+
+    //Objeto tablero
+    private Tablero tablero = new Tablero();
+
+    public Parser(Lexer lexer){
+		super(lexer);
+        this.boards=new ArrayList<Board>();
+        this.boxes=new ArrayList<Box>();
+        this.boxColor=false;
+        this.boxOnTargetColor=false;
+        this.targetColor=false;
+        this.brickColor=false;
+        this.hallColor=false;
+        this.undefinedColor=false;
+        this.playerColor=false;
+        this.nameTablero=false;
+        this.rowTablero=false;
+        this.colTablero=false;
+        this.player=false;
+        this.config=false;
+	}
+    //Board atributes
+   
+    private void addBoard(){
+        if(this.posX!=-1 && this.posY!=-1 && this.type!=""){
+            Board board=new Board(this.posX,this.posY,this.type);
+            boards.add(board);
+            resetPosition();
+            this.type="";
+        } else{
+
+        }
+    }
+    //Metodo que se ejecuta cuando se termino de insertar los boards
+    private void sendBoard(){
+        this.tablero.setBoards(this.boards);
+    }
+
+    private void addBox(){
+        if(this.posX!=-1 && this.posY!=-1){
+            Box box=new Box(this.posX,this.posY);
+            boxes.add(box);
+            resetPosition();
+        } else {
+
+        }
+    }
+
+    private void sendBoxes(){
+        this.tablero.setBoxes(this.boxes);
+    }
+    
+    private void addTarget(){
+        if(this.posX!=-1 && this.posY!=-1){
+            Target target=new Target(this.posX,this.posY);
+            targets.add(target);
+            resetPosition();
+        } else {
+
+        }
+    }
+
+    private void sendTargets(){
+        this.tablero.setTargets(this.targets);
+    }
+
+    private void addPlayer(){
+       if(this.posX!=-1 && this.posY!=-1){
+            Player player=new Player(this.posX,this.posY);
+            this.tablero.setPlayer(player);
+            this.player=true;
+            resetPosition();
+       } else {
+
+       }
+    }
+    
+    private void resetPosition(){
+        this.posX=-1;
+        this.posY=-1;
+    }
+    public void report_error(String message, Object info) {
+        System.out.println("public void report_error");
+    }
+    
+    public void report_fatal_error(String message, Object info) {
+        System.out.println("public void report_fatal_error");
+    }
+
+    public void syntax_error(Symbol cur_token) {
+        System.out.println("El error es el simbolo: " + ParserSym.terminalNames[cur_token.sym]);
+        System.out.println(String.format("En la posicion: %d, %d", cur_token.left, cur_token.right));
+    }
+
+    public void unrecovered_syntax_error(Symbol cur_token) {
+        if (cur_token.sym == ParserSym.EOF) {
+        	System.out.println("public void unrecoveredsyntax_error");
+        }
+    }
+	
+:};
+
+
+//Seccion de terminales
+terminal BRICK,HALL,NAME,ROWS,COLS,CONFIG,BOX_COLOR,BOX_ON_TARGET_COLOR,TARGET_COLOR,BRICK_COLOR,
+HALL_COLOR,UNDEFINED_COLOR,PLAYER_COLOR,BOARD,POSX,POSY,TYPE,BOXES,TARGETS,PLAYER,CORCHETE_A,CORCHETE_C,
+PARENTESIS_A,PARENTESIS_C,LLAVE_A,LLAVE_C,ENTERO,DECIMAL,FLOOR,CEIL,NOMBRE,SUMA,RESTA,
+MULTIPLICACION,DIVISION,COLOR,COMILLAS,DOSPUNTOS,COMA,ERROR;
+
+//Seccion de no terminales
+non terminal a,b,c,tablero,name,operacion,cols,rows,config,configs,board,boards,numero,x,
+contentPosition,type,boxes,box,targets,target,player,posiciones,posx,posy;
+
+//Gramaticas
+a::= LLAVE_A b;
+
+b::= tablero COMA b
+    | tablero LLAVE_C
+    ;
+
+tablero::= name {::}
+    |rows {::}
+    |cols  {::}
+    |config {::}
+    |board {::}
+    |boxes {::}
+    |targets {::}
+    |player {::}
+    ;
+
+
+name::=NAME DOSPUNTOS NOMBRE:nombre 
+        {:
+        if(!player){
+            tablero.setName(nombre.toString().replaceAll("\"",""));
+            player=true;
+        } else{
+
+        }
+        :}
+    ;
+
+rows::= ROWS DOSPUNTOS numero:row {:
+        if(!rowTablero){
+            tablero.setRows(Integer.valueOf(row.toString().replaceAll("\"","")));
+            rowTablero=true;
+        } else{
+
+        }
+        :}
+    ;
+
+cols::=COLS DOSPUNTOS numero:col {:
+        if(!colTablero){
+            tablero.setCols(Integer.valueOf(col.toString().replaceAll("\"","")));
+        } else {
+
+        }
+        :}
+    ;
+
+config::=CONFIG DOSPUNTOS LLAVE_A c {::};
+
+c::= configs COMA c {::}
+    | configs LLAVE_C {::}
+    ;
+
+configs::= BOX_COLOR DOSPUNTOS  COMILLAS COLOR:color COMILLAS {:
+            if(!boxColor){
+                tablero.setBoxColor(color.toString().replaceAll("\"",""));
+                boxColor=true;
+            }else{
+
+            }
+            :}
+    | BOX_ON_TARGET_COLOR DOSPUNTOS COMILLAS COLOR:color COMILLAS {:
+            if(!boxOnTargetColor){
+                tablero.setBoxOnTargetColor(color.toString().replaceAll("\"",""));
+                boxOnTargetColor=true;
+            }else{
+
+            }
+            :}
+    | TARGET_COLOR DOSPUNTOS COMILLAS COLOR:color COMILLAS {:
+            if(!targetColor){
+                tablero.setTargetColor(color.toString().replaceAll("\"",""));
+                targetColor=true;
+            } else{
+
+            }
+            :}
+    | BRICK_COLOR DOSPUNTOS COMILLAS COLOR:color COMILLAS {:
+            if(!brickColor){
+                tablero.setBrickColor(color.toString().replaceAll("\"",""));
+                brickColor=true;
+            }
+            :}
+    | HALL_COLOR DOSPUNTOS COMILLAS COLOR:color COMILLAS  {:
+            if(!hallColor){
+                tablero.setHallColor(color.toString().replaceAll("\"",""));
+                hallColor=true;
+            }
+            :}
+    | UNDEFINED_COLOR DOSPUNTOS COMILLAS COLOR:color COMILLAS {:
+            if(!undefinedColor){
+                tablero.setUndefinedColor(color.toString().replaceAll("\"",""));
+                undefinedColor=true;
+            }
+            :}
+    | PLAYER_COLOR DOSPUNTOS COMILLAS COLOR:color COMILLAS  {:
+            if(!playerColor){
+                tablero.setPlayerColor(color.toString().replaceAll("\"",""));
+            }
+            :}
+    ;
+    
+numero::= operacion:num1 {:RESULT=num1;:}
+    | COMILLAS operacion:num2 COMILLAS {:RESULT=num2;:}
+    | FLOOR PARENTESIS_A operacion:num3 PARENTESIS_C {:
+        RESULT=Math.floor((double)num3);
+        :}
+    | CEIL PARENTESIS_A operacion:num4 PARENTESIS_C {:RESULT=Math.ceil((double)num4);:}
+    ;
+
+
+operacion::=operacion:num MULTIPLICACION x:num2 {:RESULT=(double)num * (double)num2;:}
+    | operacion:num DIVISION x:num2 {:RESULT=(double)num / (double)num2;:}
+    | operacion:num SUMA x:num2 {:RESULT=(double)num + (double)num2;:}
+	| operacion:num RESTA x:num2 {:RESULT=(double)num-(double)num2;:}
+	| x:num {:RESULT=num;:}
+	;
+
+x ::= PARENTESIS_A operacion:num PARENTESIS_C {:RESULT=num;:}
+	| ENTERO:entero {:RESULT=entero;:}
+	| DECIMAL:decimal {:RESULT=decimal;:}
+	;	
+
+board::=BOARD DOSPUNTOS CORCHETE_A boards {:sendBoard();:};
+
+boards::= LLAVE_A contentPosition  LLAVE_C COMA boards {:addBoard();:}
+    |LLAVE_A  contentPosition LLAVE_C CORCHETE_C {:addBoard();:}
+    ;
+
+contentPosition::= posiciones:x COMA contentPosition {::}
+    | posiciones {::}
+    ;
+
+type::=TYPE DOSPUNTOS BRICK {:RESULT="BRICK";:} 
+    | TYPE DOSPUNTOS BRICK HALL {:RESULT="HALL";:};
+
+boxes::=BOXES DOSPUNTOS CORCHETE_A box {:sendBoxes();:};
+box::=LLAVE_A contentPosition LLAVE_C COMA box {:addBox();:}
+    | LLAVE_A contentPosition LLAVE_C CORCHETE_C {:addBox();:}
+    ;
+
+targets::=TARGETS DOSPUNTOS CORCHETE_A target {::};
+
+target::=LLAVE_A contentPosition LLAVE_C COMA target {:addTarget();:}
+    |LLAVE_A contentPosition LLAVE_C CORCHETE_C  {:addTarget();:}
+    ;
+
+player::= PLAYER DOSPUNTOS LLAVE_A  contentPosition LLAVE_C {:
+        if(!player){
+            addPlayer();
+        } else {
+
+        }
+    :};
+
+posiciones::= posx:x {:
+        if(posX==-1){
+            posX=Integer.valueOf(x.toString().replaceAll("\"",""));
+        } else{
+
+        }
+        :}
+    | posy:y {:
+        if(posY==-1){
+            posY=Integer.valueOf(y.toString().replaceAll("\"",""));
+        } else{ 
+
+        }
+        :}
+    | type:tipo {:
+        if(type==""){
+            type=tipo.toString().replaceAll("\"","");
+        } else{
+
+        }
+        :}
+    ;
+
+posx::=POSX DOSPUNTOS numero:x {:RESULT=x;:};
+posy::=POSY DOSPUNTOS numero:y {:RESULT=y;:};
