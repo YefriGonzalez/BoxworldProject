@@ -32,6 +32,9 @@ TYPE=[\"][t][y][p][e][\"]
 BOXES=[\"][b][o][x][e][s][\"]
 TARGETS=[\"][t][a][r][g][e][t][s][\"]
 PLAYER=[\"][p][l][a][y][e][r][\"]
+WORLDS=[\"][w][o][r][l][d][s][\"]
+WORLD=[\"][w][o][r][l][d][\"]
+ALL=[\"][a][l][l][\"]
 CORCHETE_A=[\[]
 CORCHETE_C=[\]]
 PARENTESIS_A=\(
@@ -83,6 +86,9 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 {BOXES}					{return new Symbol(ParserSym.BOXES,yyline,yycolumn,yytext());}
 {TARGETS}				{return new Symbol(ParserSym.TARGETS,yyline,yycolumn,yytext());}
 {PLAYER}				{return new Symbol(ParserSym.PLAYER,yyline,yycolumn,yytext());}
+{WORLD}					{return new Symbol(ParserSym.WORLD,yyline,yycolumn,yytext());}
+{WORLDS}				{return new Symbol(ParserSym.WORLDS,yyline,yycolumn,yytext());}
+{ALL}					{return new Symbol(ParserSym.ALL,yyline,yycolumn,yytext());}
 {CORCHETE_A}			{return new Symbol(ParserSym.CORCHETE_A,yyline,yycolumn,yytext());}
 {CORCHETE_C}			{return new Symbol(ParserSym.CORCHETE_C,yyline,yycolumn,yytext());}
 {PARENTESIS_A}			{return new Symbol(ParserSym.PARENTESIS_A,yyline,yycolumn,yytext());}
